@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ spell.name }} - Spell Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .creature-stats {
+            font-size: 0.9em;
+        }
+        .stat-block {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        .stat-item {
+            padding: 0.5rem;
+        }
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .stat-mod {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('spells') }}">Conjuring Spells</a></li>
+                <li class="breadcrumb-item active">{{ spell.name }}</li>
+            </ol>
+        </nav>
+        
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Monster List</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('player') }}">Player Character Sheet</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('summoned_creatures') }}">Summoned Creatures</a></li>
+            <li class="nav-item"><a class="nav-link active" href="{{ url_for('spells') }}">Conjuring Spells</a></li>
+        </ul>
+
+        <!-- Spell Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="mb-0">{{ spell.name }}</h2>
+                <small class="text-muted">
+                    {% if spell.level == 'cantrip' %}
+                        {{ spell.school|capitalize }} cantrip
+                    {% else %}
+                        {{ spell.level }}{{ 'st' if spell.level == '1' else ('nd' if spell.level == '2' else ('rd' if spell.level == '3' else 'th')) }}-level {{ spell.school }}
+                    {% endif %}
+                </small>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Casting Time:</strong> {{ spell.casting_time }}</p>
+                        <p><strong>Range:</strong> {{ spell.range }}</p>
+                        <p><strong>Duration:</strong> {{ spell.duration }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Components:</strong> {{ spell.components.raw }}</p>
+                        {% if spell.components.materials_needed %}
+                        <p><strong>Materials:</strong> {{ spell.components.materials_needed|join(', ') }}</p>
+                        {% endif %}
+                        <p><strong>Classes:</strong> {{ spell.classes|join(', ')|title }}</p>
+                    </div>
+                </div>
+                
+                <h5>Description</h5>
+                <p style="white-space: pre-wrap;">{{ spell.description }}</p>
+                
+                {% if spell.higher_levels %}
+                <h5>At Higher Levels</h5>
+                <p>{{ spell.higher_levels }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Summonable Creatures -->
+        <h3 class="mb-3">Summonable Creatures ({{ creatures|length }})</h3>
+        
+        {% if creatures %}
+        <div class="row">
+            {% for creature in creatures %}
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 creature-stats">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">{{ creature.name }}</h5>
+                            <small class="text-muted">{{ creature.meta }}</small>
+                        </div>
+                        <span class="badge bg-secondary">CR {{ creature.Challenge }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <strong>AC:</strong> {{ creature['Armor Class'] }}
+                            </div>
+                            <div class="col-6">
+                                <strong>HP:</strong> {{ creature['Hit Points'] }}
+                            </div>
+                        </div>
+                        <p><strong>Speed:</strong> {{ creature.Speed }}</p>
+                        
+                        <!-- Ability Scores -->
+                        <div class="stat-block border rounded p-2 bg-light">
+                            <div class="stat-item">
+                                <div class="stat-label">STR</div>
+                                <div class="stat-value">{{ creature.STR }}</div>
+                                <div class="stat-mod">({{ creature.STR_mod }})</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">DEX</div>
+                                <div class="stat-value">{{ creature.DEX }}</div>
+                                <div class="stat-mod">({{ creature.DEX_mod }})</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">CON</div>
+                                <div class="stat-value">{{ creature.CON }}</div>
+                                <div class="stat-mod">({{ creature.CON_mod }})</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">INT</div>
+                                <div class="stat-value">{{ creature.INT }}</div>
+                                <div class="stat-mod">({{ creature.INT_mod }})</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">WIS</div>
+                                <div class="stat-value">{{ creature.WIS }}</div>
+                                <div class="stat-mod">({{ creature.WIS_mod }})</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">CHA</div>
+                                <div class="stat-value">{{ creature.CHA }}</div>
+                                <div class="stat-mod">({{ creature.CHA_mod }})</div>
+                            </div>
+                        </div>
+                        
+                        {% if creature.Skills %}
+                        <p class="mt-2 mb-1"><strong>Skills:</strong> {{ creature.Skills }}</p>
+                        {% endif %}
+                        {% if creature.Senses %}
+                        <p class="mb-1"><strong>Senses:</strong> {{ creature.Senses }}</p>
+                        {% endif %}
+                        
+                        {% if creature.Traits %}
+                        <details class="mt-2">
+                            <summary><strong>Traits</strong></summary>
+                            <p class="mt-1" style="white-space: pre-wrap;">{{ creature.Traits }}</p>
+                        </details>
+                        {% endif %}
+                        
+                        {% if creature.Actions %}
+                        <details class="mt-2">
+                            <summary><strong>Actions</strong></summary>
+                            <p class="mt-1" style="white-space: pre-wrap;">{{ creature.Actions }}</p>
+                        </details>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('summon', name=creature.name) }}" class="btn btn-success btn-sm">Summon</a>
+                        <a href="{{ url_for('creature', name=creature.name) }}" class="btn btn-outline-primary btn-sm">View Full Stats</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No specific creatures found in the SRD monster database for this spell. 
+            The DM has the creatures' statistics as per the spell description.
+        </div>
+        {% endif %}
+        
+        <a href="{{ url_for('spells') }}" class="btn btn-secondary mt-3">← Back to Spells</a>
+    </div>
+</body>
+</html>

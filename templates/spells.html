@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Conjuring Spells</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="mb-4">Conjuring Spells</h1>
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Monster List</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('player') }}">Player Character Sheet</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('summoned_creatures') }}">Summoned Creatures</a></li>
+            <li class="nav-item"><a class="nav-link active" href="{{ url_for('spells') }}">Conjuring Spells</a></li>
+        </ul>
+        
+        <p class="text-muted mb-4">Spells that conjure or summon creatures. Click on a spell to see compatible creatures.</p>
+        
+        <div class="row">
+            {% for spell in spells %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ spell.name }}</h5>
+                        <span class="badge bg-primary">
+                            {% if spell.level == 'cantrip' %}
+                                Cantrip
+                            {% else %}
+                                Level {{ spell.level }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <strong>School:</strong> {{ spell.school|capitalize }}<br>
+                                <strong>Casting Time:</strong> {{ spell.casting_time }}<br>
+                                <strong>Range:</strong> {{ spell.range }}<br>
+                                <strong>Duration:</strong> {{ spell.duration }}
+                            </small>
+                        </p>
+                        <p class="card-text">
+                            <strong>Components:</strong> {{ spell.components.raw }}
+                        </p>
+                        <p class="card-text spell-description">
+                            {{ spell.description[:300] }}{% if spell.description|length > 300 %}...{% endif %}
+                        </p>
+                        {% if spell.higher_levels %}
+                        <p class="card-text">
+                            <small><strong>At Higher Levels:</strong> {{ spell.higher_levels[:150] }}{% if spell.higher_levels|length > 150 %}...{% endif %}</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('spell_detail', name=spell.name) }}" class="btn btn-success btn-sm">View Summonable Creatures</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
