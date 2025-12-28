@@ -1,23 +1,28 @@
-# Druid Summons
+# The Shepherd's Guide
 
-A Flask-based web application for managing summoned creatures in D&D 5e. Perfect for Druids, Conjuration Wizards, or any spellcaster who needs to track multiple summoned creatures during gameplay.
+A Flask-based web application designed to make playing a [Circle of the Shepherd](https://www.dndbeyond.com/classes/3-druid#CircleoftheShepherd) Druid easier in D&D 5e. Quickly summon and manage your spirit totems and conjured creatures during gameplay.
+
+## About Circle of the Shepherd
+
+Druids of the Circle of the Shepherd commune with the spirits of nature, especially the spirits of beasts and fey. These shepherds use their Wild Shape to summon spirit totems (Bear, Hawk, Unicorn) that protect and aid their allies, and they excel at conjuring nature's creatures to fight alongside them.
 
 ## Features
 
-- **Monster Browser**: Browse and search through SRD 5e monsters
-- **Filter by Challenge Rating**: Quickly find creatures by CR
+- **Monster Browser**: Browse and search through SRD 5e monsters for conjuration spells
+- **Filter by Challenge Rating**: Quickly find creatures that match your spell requirements
 - **Summon Creatures**: Add creatures to your active summons with customizable stats
-- **Mighty Summoner Support**: Automatically calculates bonus HP for Circle of the Shepherd Druids
+- **Mighty Summoner Support**: Automatically calculates bonus HP from the 6th-level Circle of the Shepherd feature (adds 2 HP per Hit Die to summoned creatures)
 - **Track Multiple Summons**: Manage HP and stats for multiple summoned creatures simultaneously
-- **Player Character Sheet**: Basic character sheet for tracking your summoner
+- **Player Character Sheet**: Track your Shepherd Druid's stats and abilities
 - **Session Persistence**: Your summoned creatures persist across page refreshes
+- **Conjuring Spells Reference**: Quick access to spells like Conjure Animals, Conjure Woodland Beings, and more
 
 ## Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/GWilsonTinnin/druid_summons.git
-   cd druid_summons
+   git clone https://github.com/GWilsonTinnin/shepherds-guide.git
+   cd shepherds-guide
    ```
 
 2. Create and activate a virtual environment:
@@ -64,11 +69,11 @@ A Flask-based web application for managing summoned creatures in D&D 5e. Perfect
 ## Project Structure
 
 ```
-druid_summons/
+shepherds-guide/
 ├── app.py              # Flask application and routes
 ├── data/
 │   ├── srd_5e_monsters.json  # Monster data
-│   └── spells.json           # Spell data
+│   └── spells.json           # Conjuration spell data
 ├── static/
 │   └── style.css       # Custom styles
 ├── templates/
@@ -76,6 +81,8 @@ druid_summons/
 │   ├── creature.html   # Individual creature details
 │   ├── summon.html     # Summon configuration page
 │   ├── summoned.html   # Active summons management
+│   ├── spells.html     # Conjuring spells list
+│   ├── spell_detail.html # Spell details with compatible creatures
 │   └── player.html     # Player character sheet
 └── README.md
 ```

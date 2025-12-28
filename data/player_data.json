@@ -7,7 +7,7 @@
     "classes": [
         {
             "name": "Druid",
-            "subclass": "Circle of Shephard",
+            "subclass": "Circle of Shepherd",
             "level": 8,
             "hit_die": "d8",
             "spellcasting": "full",
@@ -39,8 +39,8 @@
     "hit_dice": {
         "d8": 9
     },
-    "max_hp": 0,
-    "current_hp": 0,
+    "max_hp": 66,
+    "current_hp": 66,
     "ac": 20,
     "speed": "30ft.",
     "proficiency_bonus": 4,
