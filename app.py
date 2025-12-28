@@ -421,9 +421,13 @@ def summoned_creatures():
                 pass  # Ignore invalid input
             session['summoned'] = summoned
     
+    # Get druid level for Bear Spirit temp HP calculation
+    druid_level = get_class_level(player.get('classes', []), 'Druid')
+    
     return render_template('summoned.html', 
                           summoned=summoned.values(), 
                           player=player,
+                          druid_level=druid_level,
                           bear_spirit_active=player.get('class_features', {}).get('bear_spirit_active', False))
 
 @app.route('/remove_summoned/<creature_id>', methods=['POST'])
@@ -650,7 +654,27 @@ def import_character():
         
         # Update ability scores
         if 'ability_scores' in imported_data:
-            merged_data['ability_scores'] = imported_data['ability_scores']
+            ability_scores = imported_data['ability_scores']
+            
+            # Check if we received modifiers instead of scores
+            # Ability scores typically range from 1-30 (usually 8-20 for PCs)
+            # Modifiers range from -5 to +10
+            # If all values are between -5 and 10, they're likely modifiers
+            values = [v for v in ability_scores.values() if isinstance(v, (int, float))]
+            if values:
+                all_likely_modifiers = all(-5 <= v <= 10 for v in values)
+                none_likely_scores = not any(8 <= v <= 30 for v in values)
+                
+                if all_likely_modifiers or none_likely_scores:
+                    # Convert modifiers to scores using 5e PHB formula:
+                    # modifier = floor((score - 10) / 2)
+                    # Solving for score: score = 10 + (modifier * 2)
+                    for ability in ability_scores:
+                        if isinstance(ability_scores[ability], (int, float)):
+                            modifier = ability_scores[ability]
+                            ability_scores[ability] = 10 + (modifier * 2)
+            
+            merged_data['ability_scores'] = ability_scores
         
         # Update combat stats
         for field in ['max_hp', 'current_hp', 'ac', 'speed', 'proficiency_bonus']:

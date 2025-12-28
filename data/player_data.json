@@ -1,5 +1,5 @@
 {
-    "name": "Sereig Wumuo",
+    "name": "Sereig Womuo",
     "race": "Harengon",
     "background": "Hermit",
     "alignment": "Chaotic Good",
@@ -7,35 +7,42 @@
     "classes": [
         {
             "name": "Druid",
-            "subclass": "Circle of the Shepherd",
+            "subclass": "Circle of Shephard",
             "level": 8,
             "hit_die": "d8",
-            "spellcasting": "full"
+            "spellcasting": "full",
+            "primary_ability": {
+                "wisdom": 13
+            }
         },
         {
             "name": "Monk",
             "subclass": "",
             "level": 1,
             "hit_die": "d8",
-            "spellcasting": "none"
+            "spellcasting": "none",
+            "primary_ability": {
+                "dexterity": 13,
+                "wisdom": 13
+            }
         }
     ],
     "total_level": 9,
     "ability_scores": {
         "strength": 10,
         "dexterity": 18,
-        "constitution": 15,
+        "constitution": 14,
         "intelligence": 10,
         "wisdom": 20,
-        "charisma": 13
+        "charisma": 12
     },
     "hit_dice": {
         "d8": 9
     },
-    "max_hp": 66,
-    "current_hp": 66,
-    "ac": 19,
-    "speed": "30 ft",
+    "max_hp": 0,
+    "current_hp": 0,
+    "ac": 20,
+    "speed": "30ft.",
     "proficiency_bonus": 4,
     "inspiration": 0,
     "spellcasting": {
@@ -54,20 +61,10 @@
         }
     },
     "proficiencies": {
-        "armor": [
-            "light armor",
-            "medium armor",
-            "shields"
-        ],
-        "weapons": [
-            "simple weapons",
-            "shortswords"
-        ],
+        "armor": [],
+        "weapons": [],
         "tools": [],
-        "saving_throws": [
-            "intelligence",
-            "wisdom"
-        ],
+        "saving_throws": [],
         "skills": []
     },
     "features": "",
@@ -79,8 +76,10 @@
         "bear_spirit_active": false
     },
     "dndbeyond_sync": {
-        "last_sync": "2025-12-28T01:26:26.181000",
-        "source": "manual_import"
+        "character_id": "101538714",
+        "character_url": "https://www.dndbeyond.com/characters/101538714",
+        "last_sync": "2025-12-28T08:00:56.861Z",
+        "source": "dndbeyond_bookmarklet"
     },
     "multiclass_prerequisites": {
         "druid": {

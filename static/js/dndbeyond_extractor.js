@@ -124,15 +124,72 @@
         };
 
         // Try multiple selectors for ability scores
-        const abilityElements = document.querySelectorAll('.ddbc-ability-summary, .ct-ability-summary, .ct-quick-info__ability, .ddbc-quick-info__ability');
+        // D&D Beyond 2024 redesign uses different class names
+        const abilityElements = document.querySelectorAll(
+            '.ddbc-ability-summary, .ct-ability-summary, ' +
+            '.ct-quick-info__ability, .ddbc-quick-info__ability, ' +
+            '[data-testid*="ability-score"], [class*="ability-score-box"]'
+        );
         
         abilityElements.forEach(el => {
-            const abbrEl = el.querySelector('.ddbc-ability-summary__abbr, .ct-ability-summary__abbr, .ddbc-ability-summary__heading .ddbc-ability-summary__abbr');
-            const valueEl = el.querySelector('.ddbc-ability-summary__secondary, .ct-ability-summary__secondary, .ddbc-ability-summary__primary');
+            // Find the ability abbreviation
+            const abbrEl = el.querySelector(
+                '.ddbc-ability-summary__abbr, .ct-ability-summary__abbr, ' +
+                '.ddbc-ability-summary__heading .ddbc-ability-summary__abbr, ' +
+                '[class*="ability-summary__abbr"], [class*="stat-abbr"], [class*="ability-label"]'
+            );
             
-            if (abbrEl && valueEl) {
+            // IMPORTANT: In D&D Beyond:
+            // - __secondary / __score contains the SCORE (e.g., 16)
+            // - __primary / __modifier contains the MODIFIER (e.g., +3)
+            // We want the score, not the modifier!
+            
+            // First try to get the score specifically
+            let scoreEl = el.querySelector(
+                '.ddbc-ability-summary__secondary, .ct-ability-summary__secondary, ' +
+                '[class*="ability-summary__secondary"], [class*="ability-score__value"], ' +
+                '[class*="score-value"], [class*="stat-score"]'
+            );
+            
+            // If we found an element, check if it looks like a score (1-30) or a modifier (+X/-X)
+            if (scoreEl) {
+                const text = scoreEl.textContent.trim();
+                // If it has a + or - sign, it's a modifier, not a score
+                if (text.match(/^[+-]/)) {
+                    scoreEl = null; // Reset and try other methods
+                }
+            }
+            
+            // If no score element found, look through all child elements
+            if (!scoreEl) {
+                const allElements = el.querySelectorAll('*');
+                for (const candidate of allElements) {
+                    // Skip if it has child elements (we want leaf nodes)
+                    if (candidate.children.length > 0) continue;
+                    
+                    const text = candidate.textContent.trim();
+                    // Score is typically a number between 1-30 without +/- sign
+                    // Modifier would have +/- sign or be a small number that doesn't make sense as a score
+                    if (/^\d{1,2}$/.test(text)) {
+                        const num = parseInt(text, 10);
+                        // Valid ability scores are 1-30
+                        if (num >= 1 && num <= 30) {
+                            // Check it's not the modifier by ensuring it's larger than typical modifiers
+                            // Modifiers without signs would be 0-10 at most for normal characters
+                            // But scores are typically 8-20 for most characters
+                            // If num >= 8, it's likely a score
+                            if (num >= 8) {
+                                scoreEl = candidate;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (abbrEl && scoreEl) {
                 const abbr = abbrEl.textContent.trim().toUpperCase();
-                const value = parseNumber(valueEl.textContent);
+                const value = parseNumber(scoreEl.textContent);
                 
                 if (abilityMapping[abbr]) {
                     abilities[abilityMapping[abbr]] = value;
@@ -140,19 +197,45 @@
             }
         });
 
-        // Fallback: try to get from stat blocks
-        if (Object.keys(abilities).length === 0) {
-            const statBlocks = document.querySelectorAll('[class*="ability-block"], [class*="stat-block"]');
+        // Fallback: try to get from stat blocks or ability block patterns
+        if (Object.keys(abilities).length < 6) {
+            const statBlocks = document.querySelectorAll('[class*="ability-block"], [class*="stat-block"], [class*="ability-score"]');
             statBlocks.forEach(block => {
-                const label = block.querySelector('[class*="label"]');
+                const label = block.querySelector('[class*="label"], [class*="abbr"], [class*="name"]');
                 const value = block.querySelector('[class*="value"], [class*="score"]');
                 if (label && value) {
                     const abbr = label.textContent.trim().toUpperCase().substring(0, 3);
-                    if (abilityMapping[abbr]) {
-                        abilities[abilityMapping[abbr]] = parseNumber(value.textContent);
+                    if (abilityMapping[abbr] && !abilities[abilityMapping[abbr]]) {
+                        const num = parseNumber(value.textContent);
+                        // Only use if it looks like a score (8-30) not a modifier
+                        if (num >= 8 && num <= 30) {
+                            abilities[abilityMapping[abbr]] = num;
+                        }
                     }
                 }
             });
+        }
+        
+        // Final fallback: if we got modifiers instead of scores, convert them to approximate scores
+        // D&D 5e ability scores range from 1-30, but typically 3-20 for player characters
+        // Modifiers range from -5 to +10 (for scores 1-30)
+        // If all values are small (between -5 and 10), they're likely modifiers not scores
+        const values = Object.values(abilities);
+        const allLikelyModifiers = values.length > 0 && values.every(v => v >= -5 && v <= 10);
+        const noneLikelyScores = values.length > 0 && !values.some(v => v >= 8 && v <= 30);
+        
+        if (allLikelyModifiers || noneLikelyScores) {
+            console.log('D&D Beyond Extractor: Detected modifiers instead of scores, converting...');
+            console.log('Original values:', JSON.stringify(abilities));
+            for (const key in abilities) {
+                const modifier = abilities[key];
+                // Convert modifier back to score using 5e PHB formula: 
+                // modifier = floor((score - 10) / 2)
+                // Solving for score: score = 10 + (modifier * 2)
+                // This gives the lower bound of the score range for that modifier
+                abilities[key] = 10 + (modifier * 2);
+            }
+            console.log('Converted to scores:', JSON.stringify(abilities));
         }
 
         return abilities;
