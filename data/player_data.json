@@ -1,32 +1,94 @@
 {
     "name": "Sereig Wumuo",
     "race": "Harengon",
-    "class": "Shepherd Druid / Monk",
-    "subclass": "",
-    "level": 9,
     "background": "Hermit",
     "alignment": "Chaotic Good",
     "experience": 0,
-    "strength": 10,
-    "dexterity": 18,
-    "constitution": 15,
-    "intelligence": 10,
-    "wisdom": 20,
-    "charisma": 13,
+    "classes": [
+        {
+            "name": "Druid",
+            "subclass": "Circle of the Shepherd",
+            "level": 8,
+            "hit_die": "d8",
+            "spellcasting": "full"
+        },
+        {
+            "name": "Monk",
+            "subclass": "",
+            "level": 1,
+            "hit_die": "d8",
+            "spellcasting": "none"
+        }
+    ],
+    "total_level": 9,
+    "ability_scores": {
+        "strength": 10,
+        "dexterity": 18,
+        "constitution": 15,
+        "intelligence": 10,
+        "wisdom": 20,
+        "charisma": 13
+    },
+    "hit_dice": {
+        "d8": 9
+    },
     "max_hp": 66,
     "current_hp": 66,
     "ac": 19,
     "speed": "30 ft",
     "proficiency_bonus": 4,
     "inspiration": 0,
-    "skills": "",
-    "saving_throws": "",
+    "spellcasting": {
+        "spellcaster_level": 8,
+        "spell_slots": {
+            "1st": 4,
+            "2nd": 3,
+            "3rd": 3,
+            "4th": 2
+        },
+        "spells_known_by_class": {
+            "druid": {
+                "cantrips": [],
+                "prepared": []
+            }
+        }
+    },
+    "proficiencies": {
+        "armor": [
+            "light armor",
+            "medium armor",
+            "shields"
+        ],
+        "weapons": [
+            "simple weapons",
+            "shortswords"
+        ],
+        "tools": [],
+        "saving_throws": [
+            "intelligence",
+            "wisdom"
+        ],
+        "skills": []
+    },
     "features": "",
     "equipment": "",
-    "spells": "",
     "class_features": {
         "mighty_summoner": true,
         "guardian_spirit": false,
-        "faithful_summons": false
+        "faithful_summons": false,
+        "bear_spirit_active": false
+    },
+    "dndbeyond_sync": {
+        "last_sync": "2025-12-28T01:26:26.181000",
+        "source": "manual_import"
+    },
+    "multiclass_prerequisites": {
+        "druid": {
+            "wisdom": 13
+        },
+        "monk": {
+            "dexterity": 13,
+            "wisdom": 13
+        }
     }
 }
