@@ -82,7 +82,57 @@
         </div>
 
         <!-- Summonable Creatures -->
-        <h3 class="mb-3">Summonable Creatures ({{ creatures|length }})</h3>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0">Summonable Creatures 
+                    <span class="badge bg-primary">{{ creatures|length }}{% if creatures|length != total_creatures %} of {{ total_creatures }}{% endif %}</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Challenge Rating</label>
+                        <select name="cr" class="form-select">
+                            <option value="">All CRs</option>
+                            {% for cr in available_crs %}
+                            <option value="{{ cr }}" {% if current_cr == cr %}selected{% endif %}>CR {{ cr }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Skill</label>
+                        <select name="skill" class="form-select">
+                            <option value="">All Skills</option>
+                            {% for skill in available_skills %}
+                            <option value="{{ skill }}" {% if current_skill == skill %}selected{% endif %}>{{ skill }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Trait</label>
+                        <select name="trait" class="form-select">
+                            <option value="">All Traits</option>
+                            {% for trait in available_traits %}
+                            <option value="{{ trait }}" {% if current_trait == trait|lower %}selected{% endif %}>{{ trait }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a href="{{ url_for('spell_detail', name=spell.name) }}" class="btn btn-outline-secondary">Clear</a>
+                    </div>
+                </form>
+                
+                {% if current_cr or current_skill or current_trait %}
+                <div class="mb-3">
+                    <span class="text-muted">Active filters:</span>
+                    {% if current_cr %}<span class="badge bg-info me-1">CR {{ current_cr }}</span>{% endif %}
+                    {% if current_skill %}<span class="badge bg-info me-1">{{ current_skill }}</span>{% endif %}
+                    {% if current_trait %}<span class="badge bg-info me-1">{{ current_trait }}</span>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
         
         {% if creatures %}
         <div class="row">

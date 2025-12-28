@@ -263,7 +263,62 @@ def spell_detail(name):
         return "Spell not found", 404
     
     creatures = get_summonable_creatures(spell.get('name', ''))
-    return render_template('spell_detail.html', spell=spell, creatures=creatures)
+    
+    # Get filter parameters
+    cr_filter = request.args.get('cr', '')
+    skill_filter = request.args.get('skill', '')
+    trait_filter = request.args.get('trait', '').lower()
+    
+    # Apply filters
+    filtered_creatures = creatures
+    
+    if cr_filter:
+        filtered_creatures = [c for c in filtered_creatures 
+                            if str(c.get('Challenge', '')).split()[0] == cr_filter]
+    
+    if skill_filter:
+        filtered_creatures = [c for c in filtered_creatures 
+                            if skill_filter.lower() in c.get('Skills', '').lower()]
+    
+    if trait_filter:
+        filtered_creatures = [c for c in filtered_creatures 
+                            if trait_filter in c.get('Traits', '').lower()]
+    
+    # Extract unique CRs and skills for filter dropdowns
+    available_crs = sorted(set(str(c.get('Challenge', '')).split()[0] for c in creatures if c.get('Challenge')),
+                          key=lambda x: float(x) if '/' not in x else float(x.split('/')[0])/float(x.split('/')[1]))
+    
+    available_skills = set()
+    for c in creatures:
+        skill_str = c.get('Skills', '')
+        if skill_str:
+            for part in skill_str.split(','):
+                skill_name = part.strip().split()[0] if part.strip() else ''
+                if skill_name:
+                    available_skills.add(skill_name)
+    available_skills = sorted(available_skills)
+    
+    # Extract common traits
+    available_traits = set()
+    for c in creatures:
+        traits = c.get('Traits', '')
+        if traits:
+            # Extract trait names (usually formatted as "Trait Name." at start of description)
+            import re
+            trait_names = re.findall(r'([A-Z][a-z]+(?: [A-Z][a-z]+)*)\\.', traits)
+            available_traits.update(trait_names)
+    available_traits = sorted(available_traits)
+    
+    return render_template('spell_detail.html', 
+                          spell=spell, 
+                          creatures=filtered_creatures,
+                          total_creatures=len(creatures),
+                          available_crs=available_crs,
+                          available_skills=available_skills,
+                          available_traits=available_traits,
+                          current_cr=cr_filter,
+                          current_skill=skill_filter,
+                          current_trait=trait_filter)
 
 if __name__ == '__main__':
     app.run(debug=True)
