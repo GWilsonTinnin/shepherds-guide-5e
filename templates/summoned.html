@@ -58,6 +58,25 @@
         .traits-content em strong, .actions-content em strong {
             color: #495057;
         }
+        .spirit-totem-card {
+            background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+            color: white;
+            border: none;
+        }
+        .spirit-totem-card .form-check-input:checked {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+        .temp-hp-badge {
+            background-color: #17a2b8;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+        }
+        .temp-hp-input {
+            width: 70px;
+        }
     </style>
 </head>
 
@@ -73,6 +92,35 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('spells') }}">Conjuring Spells</a></li>
         </ul>
 
+        <!-- Spirit Totem Section -->
+        <div class="card spirit-totem-card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="card-title mb-2">🐻 Spirit Totem</h5>
+                        <p class="card-text mb-2">
+                            <strong>Bear Spirit:</strong> Grants temporary HP equal to 5 + your druid level ({{ 5 + player.level }} temp HP) 
+                            to you and allies. Also grants advantage on Strength checks and saving throws.
+                        </p>
+                        <small class="text-warning">Duration: 1 minute | Recharges on short or long rest</small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <form method="post" action="{{ url_for('toggle_bear_spirit') }}" class="d-inline">
+                            <div class="form-check form-switch d-inline-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" role="switch" 
+                                       name="bear_spirit_active" id="bearSpiritToggle"
+                                       {% if bear_spirit_active %}checked{% endif %}
+                                       onchange="this.form.submit()" style="transform: scale(1.5);">
+                                <label class="form-check-label fw-bold" for="bearSpiritToggle">
+                                    {{ 'Active' if bear_spirit_active else 'Inactive' }}
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <ul class="list-group mb-4">
             {% for creature in summoned %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -81,6 +129,9 @@
                     <span class="ms-2 hp-display">
                         HP: <span class="hp-current">{{ creature.current_hp if creature.current_hp is not none else creature['HP Max'] }}</span> / {{ creature['HP Max'] }}
                     </span>
+                    {% if creature.temp_hp and creature.temp_hp > 0 %}
+                    <span class="ms-2 temp-hp-badge">Temp HP: {{ creature.temp_hp }}</span>
+                    {% endif %}
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-heal" 
@@ -179,16 +230,36 @@
 
                         <form method="post" action="{{ url_for('update_summoned', creature_id=creature['id']) }}"
                             style="display:inline;">
-                            <input type="number" name="current_hp" value="{{ creature.current_hp }}"
-                                max="{{ creature['HP Max'] }}" min="0" style="width:70px;"
-                                class="form-control-sm d-inline-block">
-                            <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                            <div class="row g-2 align-items-center mb-2">
+                                <div class="col-auto">
+                                    <label class="col-form-label">HP:</label>
+                                </div>
+                                <div class="col-auto">
+                                    <input type="number" name="current_hp" value="{{ creature.current_hp }}"
+                                        max="{{ creature['HP Max'] }}" min="0" style="width:70px;"
+                                        class="form-control form-control-sm">
+                                </div>
+                                <div class="col-auto">
+                                    <label class="col-form-label text-info">Temp HP:</label>
+                                </div>
+                                <div class="col-auto">
+                                    <input type="number" name="temp_hp" value="{{ creature.temp_hp if creature.temp_hp else 0 }}"
+                                        min="0" style="width:70px;"
+                                        class="form-control form-control-sm">
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                                </div>
+                            </div>
                         </form>
 
                         <p>
                             {% if creature.get('img_url') %}
                             {% endif %}
                             <strong>Max:</strong> {{ creature['HP Max'] }}<br>
+                            {% if creature.temp_hp and creature.temp_hp > 0 %}
+                            <strong class="text-info">Temp HP:</strong> {{ creature.temp_hp }}<br>
+                            {% endif %}
                             <strong>Hit Dice:</strong> {{ creature['Hit Dice'] }}<br>
                             {% if creature.get('mighty_summoner') %}
                             <strong>Mighty Summoner:</strong> +{{ creature['extra_hp'] }} HP ({{ creature['Hit Dice'] }})<br>

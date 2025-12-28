@@ -42,7 +42,8 @@ DEFAULT_PLAYER_DATA = {
     "class_features": {
         "mighty_summoner": False,
         "guardian_spirit": False,
-        "faithful_summons": False
+        "faithful_summons": False,
+        "bear_spirit_active": False
     }
 }
 
@@ -250,6 +251,8 @@ def summon(name):
 @app.route('/summoned', methods=['GET', 'POST'])
 def summoned_creatures():
     summoned = get_summoned()
+    player = load_player_data()
+    
     if request.method == 'POST':
         creature_id = request.form.get('id')
         new_hp = request.form.get('current_hp')
@@ -260,7 +263,11 @@ def summoned_creatures():
             except ValueError:
                 pass  # Ignore invalid input
             session['summoned'] = summoned
-    return render_template('summoned.html', summoned=summoned.values())
+    
+    return render_template('summoned.html', 
+                          summoned=summoned.values(), 
+                          player=player,
+                          bear_spirit_active=player.get('class_features', {}).get('bear_spirit_active', False))
 
 @app.route('/remove_summoned/<creature_id>', methods=['POST'])
 def remove_summoned(creature_id):
@@ -275,12 +282,56 @@ def update_summoned(creature_id):
     summoned = get_summoned()
     if creature_id in summoned:
         current_hp = request.form.get('current_hp')
+        temp_hp = request.form.get('temp_hp')
         if current_hp is not None:
             try:
                 summoned[creature_id]['current_hp'] = int(current_hp)
             except ValueError:
                 pass  # Ignore invalid input
-            session['summoned'] = summoned
+        if temp_hp is not None:
+            try:
+                summoned[creature_id]['temp_hp'] = int(temp_hp)
+            except ValueError:
+                summoned[creature_id]['temp_hp'] = 0
+        session['summoned'] = summoned
+    return redirect(url_for('summoned_creatures'))
+
+@app.route('/toggle_bear_spirit', methods=['POST'])
+def toggle_bear_spirit():
+    """Toggle Bear Spirit aura on/off and apply temp HP to all summoned creatures."""
+    player = load_player_data()
+    bear_spirit_active = request.form.get('bear_spirit_active') == 'on'
+    
+    # Update player data
+    player['class_features']['bear_spirit_active'] = bear_spirit_active
+    save_player_data(player)
+    
+    # If activating bear spirit, apply temp HP to all summoned creatures
+    if bear_spirit_active:
+        summoned = get_summoned()
+        # Temp HP = 5 + druid level
+        temp_hp = 5 + player.get('level', 1)
+        for creature_id in summoned:
+            # Only set temp HP if creature doesn't already have higher temp HP
+            current_temp_hp = summoned[creature_id].get('temp_hp', 0)
+            if temp_hp > current_temp_hp:
+                summoned[creature_id]['temp_hp'] = temp_hp
+        session['summoned'] = summoned
+    
+    return redirect(url_for('summoned_creatures'))
+
+@app.route('/update_temp_hp/<creature_id>', methods=['POST'])
+def update_temp_hp(creature_id):
+    """Update temp HP for a specific creature."""
+    summoned = get_summoned()
+    if creature_id in summoned:
+        temp_hp = request.form.get('temp_hp')
+        if temp_hp is not None:
+            try:
+                summoned[creature_id]['temp_hp'] = max(0, int(temp_hp))
+            except ValueError:
+                summoned[creature_id]['temp_hp'] = 0
+        session['summoned'] = summoned
     return redirect(url_for('summoned_creatures'))
 
 @app.route('/set_summoner_info', methods=['POST'])
